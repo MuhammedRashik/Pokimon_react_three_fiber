@@ -1,14 +1,16 @@
-import { CameraControls, Environment, MeshPortalMaterial, OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
+import { CameraControls, Environment, MeshPortalMaterial, OrbitControls, RoundedBox, Text, useTexture,useCursor } from "@react-three/drei";
 import * as THREE from 'three'
 import { Ninja } from "./Ninja";
 import { Ghost } from "./Ghost_Skull";
 import { Wizard } from "./Wizard";
 import { useEffect, useRef, useState } from "react";
 import { useFrame,useThree } from "@react-three/fiber";
-import { damp } from "@react-spring/three/targets/three";
+import { easing } from "maath";
 export const Experience = () => {
 
   const [active,setActive]=useState(null)
+  const [hovered, setHovered] = useState(null);
+  useCursor(hovered);
  const controlsRef=useRef()
   const scene=useThree((state)=>state.scene)
   useEffect(()=>{
@@ -46,22 +48,22 @@ export const Experience = () => {
     <>
     <ambientLight intensity={0.5}/>
     <Environment preset="sunset"/>
-      <CameraControls ref={controlsRef} />
-    <MonsterStage texture={'/textures/Radiant_Painting_equirectangular-jpg_water_world_1781255653_9269204.jpg'}name="WIZARD" color="#74a157" active={active} setActive={setActive} >
+    <CameraControls ref={controlsRef} maxPolarAngle={Math.PI /2} minPolarAngle={Math.PI/6} />
+    <MonsterStage texture={'/textures/Radiant_Painting_equirectangular-jpg_water_world_1781255653_9269204.jpg'}name="WIZARD" color="#74a157" active={active} setActive={setActive} hovered={hovered} setHovered={setHovered} >
    
-     <Wizard scale={0.6} position-y={-1}/>
+     <Wizard scale={0.6} position-y={-1} hovered={hovered === "WIZARD"} />
+     </MonsterStage>
+
+
+
+    <MonsterStage texture={'/textures/Realism_equirectangular-jpg_water_world_1316249493_9269226.jpg'} position-x={-2.5} rotation-y={Math.PI  / 8} name="NINJA" color="#050505" active={active} setActive={setActive} hovered={hovered} setHovered={setHovered}>
+    <Ninja scale={0.6} position-y={-1} hovered={hovered==="NINJA"}/>
     </MonsterStage>
 
 
 
-    <MonsterStage texture={'/textures/Realism_equirectangular-jpg_water_world_1316249493_9269226.jpg'} position-x={-2.5} rotation-y={Math.PI  / 8} name="NINJA" color="#050505" active={active} setActive={setActive}>
-    <Ninja scale={0.6} position-y={-1}/>
-    </MonsterStage>
-
-
-
-    <MonsterStage texture={'/textures/Sky_Dome_equirectangular-jpg_my_wolrd_2013716406_9269184.jpg'} position-x={2.5} rotation-y={-Math.PI  / 8} name="GHOST" color="#17071b" active={active} setActive={setActive}>
-    <Ghost  scale={0.6} position-y={-1}/>
+    <MonsterStage texture={'/textures/Sky_Dome_equirectangular-jpg_my_wolrd_2013716406_9269184.jpg'} position-x={2.5} rotation-y={-Math.PI  / 8} name="GHOST" color="#17071b" active={active} setActive={setActive} hovered={hovered} setHovered={setHovered}>
+    <Ghost  scale={0.6} position-y={-1} hovered={hovered==="GHOST"}/>
     </MonsterStage>
 
      
@@ -71,15 +73,16 @@ export const Experience = () => {
 
 
 
-const MonsterStage =({children,texture,name,color,active,setActive,...props})=>{
+const MonsterStage =({children,texture,name,color,active,setActive,hovered,setHovered,...props})=>{
   const map=useTexture(texture)
 
   const portalMaterial=useRef();
 
+
+
   useFrame((_state, delta) => {
     const worldOpen = active === name;
-    // portalMaterial.current.blend = THREE.MathUtils.damp(portalMaterial.current.blend, worldOpen ? 1 : 0, 0.2, delta);
-    easing.damp(portalMaterial.current,"blend",worldOpen ? 1 : 0 ,0.2,delta)
+    easing.damp(portalMaterial.current, "blend", worldOpen ? 1 : 0, 0.2, delta);
   });
 
 
@@ -89,7 +92,7 @@ const MonsterStage =({children,texture,name,color,active,setActive,...props})=>{
     {name}
     <meshBasicMaterial color={color} toneMapped={false}/>
     </Text>
-    <RoundedBox args={[2,3,0.1]} onDoubleClick={()=> setActive(active === name ? null : name )} name={name}>
+    <RoundedBox args={[2,3,0.1]} onDoubleClick={()=> setActive(active === name ? null : name )} name={name} onPointerEnter={()=>setHovered(name) } onPointerLeave={() => setHovered(null)}>
       
     <MeshPortalMaterial side={THREE.DoubleSide} ref={portalMaterial}>
     <ambientLight intensity={0.5}/>

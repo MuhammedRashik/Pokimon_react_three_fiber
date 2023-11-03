@@ -5,24 +5,28 @@ Command: npx gltfjsx@6.2.14 public/models/Ghost_Skull.gltf -o src/components/Gho
 
 import React, { useEffect, useRef } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
+import { act } from 'react-three-fiber'
 
-export function Ghost(props) {
+export function Ghost({hovered,...props}) {
   const group = useRef()
   const { nodes, materials, animations } = useGLTF('/models/Ghost_Skull.gltf')
   const { actions } = useAnimations(animations, group)
 
-console.log(actions,'from Gost ');
+console.log('gost ',actions);
   useEffect(() => {
-    if (actions && actions["Flying_Idle"]) {
-      actions["Flying_Idle"].reset().fadeIn(0.5).play();
-  
+   
+    const anim = hovered ? "Headbutt" : "Flying_Idle"
+    if (actions && actions[anim]) {
+      actions[anim].reset().fadeIn(0.5).play();
+      
+
       return () => {
-        if (actions["Flying_Idle"]) {
-          actions["Flying_Idle"].fadeOut(0.5);
+        if (actions[anim]) {
+          actions[anim].fadeOut(0.5);
         }
       };
     }
-  }, []);
+  }, [hovered]);
 
   return (
     <group ref={group} {...props} dispose={null}>

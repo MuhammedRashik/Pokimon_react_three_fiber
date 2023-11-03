@@ -6,22 +6,26 @@ Command: npx gltfjsx@6.2.14 public/models/Wizard.gltf -o src/components/Wizard.j
 import React, { useEffect, useRef } from 'react'
 import { useGLTF, useAnimations } from '@react-three/drei'
 
-export function Wizard(props) {
+export function Wizard({hovered,...props}) {
   const group = useRef()
   const { nodes, materials, animations } = useGLTF('/models/Wizard.gltf')
   const { actions } = useAnimations(animations, group)
 
+  console.log('wizzz',actions);
   useEffect(() => {
-    if (actions && actions["Idle"]) {
-      actions["Idle"].reset().fadeIn(0.5).play();
-  
+    console.log('iam here >>>>',hovered);
+    const anim = hovered ? "Dance" : "Idle"
+    if (actions && actions[anim]) {
+      actions[anim].reset().fadeIn(0.5).play();
+      
+
       return () => {
-        if (actions["Idle"]) {
-          actions["Idle"].fadeOut(0.5);
+        if (actions[anim]) {
+          actions[anim].fadeOut(0.5);
         }
       };
     }
-  }, []);
+  }, [hovered]);
   return (
     <group ref={group} {...props} dispose={null}>
       <group name="Scene">

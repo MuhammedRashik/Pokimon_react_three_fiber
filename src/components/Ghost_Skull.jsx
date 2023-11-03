@@ -22,7 +22,7 @@ console.log(actions,'from Gost ');
         }
       };
     }
-  }, [actions]);
+  }, []);
 
   return (
     <group ref={group} {...props} dispose={null}>

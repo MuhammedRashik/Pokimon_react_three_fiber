@@ -21,7 +21,7 @@ export function Wizard(props) {
         }
       };
     }
-  }, [actions]);
+  }, []);
   return (
     <group ref={group} {...props} dispose={null}>
       <group name="Scene">

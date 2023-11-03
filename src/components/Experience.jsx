@@ -1,20 +1,52 @@
-import { Environment, MeshPortalMaterial, OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
+import { CameraControls, Environment, MeshPortalMaterial, OrbitControls, RoundedBox, Text, useTexture } from "@react-three/drei";
 import * as THREE from 'three'
 import { Ninja } from "./Ninja";
 import { Ghost } from "./Ghost_Skull";
 import { Wizard } from "./Wizard";
-import { useRef, useState } from "react";
-import { useFrame } from "react-three-fiber";
+import { useEffect, useRef, useState } from "react";
+import { useFrame,useThree } from "@react-three/fiber";
+import { damp } from "@react-spring/three/targets/three";
 export const Experience = () => {
 
   const [active,setActive]=useState(null)
+ const controlsRef=useRef()
+  const scene=useThree((state)=>state.scene)
+  useEffect(()=>{
+    if(active){
+      const targetPosition= new THREE.Vector3();
+      scene.getObjectByName(active).getWorldPosition(targetPosition)
+      controlsRef.current.setLookAt(
+        0,
+        0,
+        5,
+        targetPosition.x,
+        targetPosition.y,
+        targetPosition.z,
+        true
+        
 
+      )
+    }else{
+      controlsRef.current.setLookAt(
+        0,
+        0,
+        10,
+        0,
+        0,
+        0,
+        true
+
+
+      )
+    }
+
+  },[active])
 
   return (
     <>
     <ambientLight intensity={0.5}/>
     <Environment preset="sunset"/>
-      <OrbitControls />
+      <CameraControls ref={controlsRef} />
     <MonsterStage texture={'/textures/Radiant_Painting_equirectangular-jpg_water_world_1781255653_9269204.jpg'}name="WIZARD" color="#74a157" active={active} setActive={setActive} >
    
      <Wizard scale={0.6} position-y={-1}/>
@@ -44,9 +76,11 @@ const MonsterStage =({children,texture,name,color,active,setActive,...props})=>{
 
   const portalMaterial=useRef();
 
-  useFrame(()=>{
-
-  })
+  useFrame((_state, delta) => {
+    const worldOpen = active === name;
+    // portalMaterial.current.blend = THREE.MathUtils.damp(portalMaterial.current.blend, worldOpen ? 1 : 0, 0.2, delta);
+    easing.damp(portalMaterial.current,"blend",worldOpen ? 1 : 0 ,0.2,delta)
+  });
 
 
   return ( <group{...props}>
@@ -55,7 +89,7 @@ const MonsterStage =({children,texture,name,color,active,setActive,...props})=>{
     {name}
     <meshBasicMaterial color={color} toneMapped={false}/>
     </Text>
-    <RoundedBox args={[2,3,0.1]} onDoubleClick={()=> setActive(active === name ? null : name )}>
+    <RoundedBox args={[2,3,0.1]} onDoubleClick={()=> setActive(active === name ? null : name )} name={name}>
       
     <MeshPortalMaterial side={THREE.DoubleSide} ref={portalMaterial}>
     <ambientLight intensity={0.5}/>
